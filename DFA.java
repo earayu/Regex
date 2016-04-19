@@ -57,42 +57,93 @@ public class DFA {
 	}
 	
 	//从NFA转DFA。关键代码。实现了子集构造法
+//	public DFA(NFA nfa)
+//	{	//计算开始节点的闭包
+//		NFANode s0 = nfa.getStart();
+//		
+//		ArrayList<ArrayList<NFANode>> node = new ArrayList<>();
+//		node.add(Utils.eClosure(s0));
+//		
+//		ArrayList<ArrayList<NFANode>> result = new ArrayList<>();
+//		Stack<ArrayList<NFANode>> Dstates = new Stack<>();
+//		Dstates.push(Utils.eClosure(s0));
+//		
+//		while(!Dstates.isEmpty())
+//		{
+//			ArrayList<NFANode> currentNode = Dstates.pop();
+//			//为DFA添加一个状态
+//			result.add(currentNode);
+//			
+//			for(Character c:Utils.alphetbet.toCharArray())
+//			{
+//				ArrayList<NFANode> T = Utils.eClosure(Utils.move(currentNode,c));
+//				if(Utils.inResult(result, T)==false)
+//				{
+//					Dstates.push(T);
+//					node.add(T);
+//				}
+//				result.add(T);
+//			}
+//		}
+//		
+//		
+//		DFA dfa = new DFA();
+//		for(ArrayList<NFANode> T:result)
+//			dfa.addNodeToDFA(T);
+//		/**
+//		 * 下面这段代码是最慢的
+//		 */
+//		int count = 1;
+//		for(int i=0;i<result.size();)
+//		{
+//			ArrayList<NFANode> from = result.get(i++);
+//			for(Character c:Utils.alphetbet.toCharArray())
+//			{
+//				ArrayList<NFANode> to = result.get(i++);
+//				dfa.addEdgeToState(from, c, to);
+//				count++;
+//				System.out.println(c);
+//			}
+//		}
+//		System.out.println(count);
+//		this.dfa = dfa.dfa;
+//	}
+	
 	public DFA(NFA nfa)
-	{	//计算开始节点的闭包
+	{	
+		DFA dfa = new DFA();
+		//计算开始节点的闭包
 		NFANode s0 = nfa.getStart();
 		
 		ArrayList<ArrayList<NFANode>> result = new ArrayList<>();
 		Stack<ArrayList<NFANode>> Dstates = new Stack<>();
 		Dstates.push(Utils.eClosure(s0));
+		result.add(Utils.eClosure(s0));
+		dfa.addNodeToDFA(Utils.eClosure(s0));
 		
 		while(!Dstates.isEmpty())
 		{
 			ArrayList<NFANode> currentNode = Dstates.pop();
 			//为DFA添加一个状态
-			result.add(currentNode);
+			
 			
 			for(Character c:Utils.alphetbet.toCharArray())
 			{
 				ArrayList<NFANode> T = Utils.eClosure(Utils.move(currentNode,c));
-				if(Utils.inResult(result, T)==false)
+				if(!Utils.inResult(result, T))
+				{
 					Dstates.push(T);
-				result.add(T);
+					dfa.addNodeToDFA(T);
+					result.add(T);
+					//dfa.addEdgeToState(currentNode, c, T);
+				}
+				if(currentNode.size()>0 && T.size()>0)
+					dfa.addEdgeToState(currentNode, c, T);
+				//result.add(T);
 			}
+			
 		}
-		
-		DFA dfa = new DFA();
-		for(ArrayList<NFANode> T:result)
-			dfa.addNodeToDFA(T);
 
-		for(int i=0;i<result.size();)
-		{
-			ArrayList<NFANode> from = result.get(i++);
-			for(Character c:Utils.alphetbet.toCharArray())
-			{
-				ArrayList<NFANode> to = result.get(i++);
-				dfa.addEdgeToState(from, c, to);
-			}
-		}
 		this.dfa = dfa.dfa;
 	}
 

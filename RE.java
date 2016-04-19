@@ -194,8 +194,13 @@ public class RE {
 	private void makeDFA()
 	{
 		String preRE = pre();
+		long t0 = System.currentTimeMillis();
 		NFA nfa = this.evaluateExpression(preRE);
+		long t1 = System.currentTimeMillis();
 		this.dfa = new DFA(nfa);
+		long t2 = System.currentTimeMillis();
+		System.out.println("nfa:" + (t1-t0) + "ms");
+		System.out.println("dfa:" + (t2-t1) + "ms");
 	}
 	
 	/**

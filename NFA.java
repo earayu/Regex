@@ -12,6 +12,11 @@ public class NFA{
 	
 	private ArrayList<NFANode> nfa;
 	
+	public int size()
+	{
+		return nfa.size();
+	}
+	
 	/**
 	 * 约定：索引为i的边到达索引为i的节点
 	 * @author earayu
