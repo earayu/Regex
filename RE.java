@@ -75,7 +75,7 @@ public class RE {
 		for(int i=1; i<re.length(); i++) {
 			//添加毗邻运算符(.)
 			if(isCharacter(i) && (re.charAt(i-1) != '(' && re.charAt(i-1) != '|' ) 
-			 || (re.charAt(i) == '(' && isCharacter(i-1))) {
+			 || (re.charAt(i) == '(' && (isCharacter(i-1)) || re.charAt(i-1)==')'  )) {
 				sb.append('.');
 			}
 			sb.append(re.charAt(i));
@@ -219,6 +219,7 @@ public class RE {
 	{
 		re = pre();//这里会改变re，而re影响到isCharacter()。如果要改这里的话，需要把isCharacter()也改了。
 		String redot = new String(this.addDot(re));
+		System.out.println("redot"+redot);
 		String postfix = new String(this.infixToPostfix(redot));
 		System.out.println("postfix:"+postfix);
 		NFA nfa = this.evaluateExpression(postfix);
