@@ -1,5 +1,6 @@
 package 词法分析;
 
+import java.util.Scanner;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
@@ -32,37 +33,45 @@ public class RE {
 		return re;
 	}
 
-	private boolean isCharacter(int i) {
+//	private boolean isCharacter(int i) {
+//		char[] alp = Utils.alphetbet.toCharArray();
+//		char c = re.charAt(i);
+//		for(int j=0;j<alp.length;++j)
+//		{
+//			if(alp[j]==c)
+//				return true;
+//		}
+//		return false;
+//	}
+	
+	private boolean isCharacter(char c) {
 		char[] alp = Utils.alphetbet.toCharArray();
-		char c = re.charAt(i);
 		for(int j=0;j<alp.length;++j)
 		{
 			if(alp[j]==c)
 				return true;
 		}
 		return false;
-//		return re.charAt(i) >= 'a' && re.charAt(i) <= 'z' 
-//			|| re.charAt(i) >= 'A' && re.charAt(i) <= 'Z' 
-//			|| re.charAt(i) >= '0' && re.charAt(i) <= '9'
-//			|| re.charAt(i) >= 1 && re.charAt(i) <= 6
-//			|| re.charAt(i) == ' ' ||re.charAt(i) == '+'
-//			;
 	}
 	
-	private String pre()
+	/**
+	 * 将正则表达式转义。
+	 * @param s
+	 * @return
+	 */
+	private String escapeRE(String s)
 	{
-		String s = new String(re);
-		for(int i=0;i<s.length();++i)//TODO 如果\在末尾会数组越界
+		for(int i=1;i<s.length();++i)
 		{
-			if(s.charAt(i)=='\\' && 
-					(	s.charAt(i+1)=='.'|| s.charAt(i+1)=='|' || s.charAt(i+1)=='*'
-					||	s.charAt(i+1)=='(' || s.charAt(i+1)==')' || s.charAt(i+1)=='\\'
+			if(s.charAt(i-1)=='\\' && 
+					(	s.charAt(i)=='.'|| s.charAt(i)=='|' || s.charAt(i)=='*'
+					||	s.charAt(i)=='(' || s.charAt(i)==')' || s.charAt(i)=='\\'
 					)	
 			  )
 			{
-				String h = s.substring(0,i);
-				String m = String.valueOf( (char)escape.indexOf( s.charAt(i+1) ) );
-				String t = s.substring(i+2,s.length());
+				String h = s.substring(0,i-1);
+				String m = String.valueOf( (char)escape.indexOf( s.charAt(i) ) );
+				String t = s.substring(i+1,s.length());
 				s = h + m + t;
 			}
 		}
@@ -74,10 +83,10 @@ public class RE {
 		sb.append(re.charAt(0));
 		for(int i=1; i<re.length(); i++) {
 			//添加毗邻运算符(.)
-			if(isCharacter(i) && (re.charAt(i-1) != '(' && re.charAt(i-1) != '|' ) 
-			 || (re.charAt(i) == '(' && (isCharacter(i-1)) || re.charAt(i-1)==')'  )) {
+			boolean flag = isCharacter(re.charAt(i)) && (re.charAt(i-1) == '*' || re.charAt(i-1) == ')' || isCharacter(re.charAt(i-1))) 
+					 || (re.charAt(i) == '(' && (isCharacter(re.charAt(i-1)) || re.charAt(i-1)==')' || re.charAt(i-1)=='*'));
+			if(flag) 
 				sb.append('.');
-			}
 			sb.append(re.charAt(i));
 		}
 		return sb.toString();
@@ -136,33 +145,6 @@ public class RE {
 	
 
 	
-//	private NFA evaluateExpression(String postfix) {
-//		//创建一个操作数栈来存储操作数		
-//		Stack<NFA> operandStack = new Stack<NFA>();
-//		//分离操作数与操作符
-//		StringTokenizer tokens = new StringTokenizer(postfix, "*|.() ", true);
-//		//遍历符号
-//		while(tokens.hasMoreTokens()) {
-//			//String token = tokens.nextToken().trim();
-//			String token = tokens.nextToken();
-//			if(token.charAt(0) == '*') {	//*操作符(单目运算符)
-//				NFA nfa = operandStack.pop();
-//				nfa.closure();			//进行闭包运算
-//				operandStack.push(nfa);
-//			} else if(token.charAt(0) == '|'
-//					|| token.charAt(0) == '.') {
-//				processAnOperator(operandStack, token);
-//			}
-//			else {		//操作数
-//				for(int i=0;i<token.length();++i)
-//				{
-//					operandStack.push(NFA.ins(token.charAt(i))); //为单个字符构造NFA对象
-//				}
-//			}
-//		}
-//		return operandStack.pop();
-//	}
-	
 	private NFA evaluateExpression(String postfix) {
 		//创建一个操作数栈来存储操作数		
 		Stack<NFA> operandStack = new Stack<NFA>();
@@ -199,30 +181,20 @@ public class RE {
 			operandStack.push(op2);
 		}
 	}
+
+	/*
+	 * 预处理正则表达式：转义,解释语法糖（未实现）,添加连接符,转成后缀式等.
+	 */
+	private String pre()
+	{
+		return infixToPostfix(addDot(escapeRE(re)));
+	}
 	
-//	//处理一次双目运算符运算
-//	private void processAnOperator(Stack<NFA> operandStack, String token) {		
-//		char op = token.charAt(0);		//操作符
-//		NFA op1 = operandStack.pop();	//操作数1
-//		NFA op2 = operandStack.pop();	//操作数2
-//		if(op == '|') {			//connect运算
-//			op2.parallel(op1);
-//			operandStack.push(op2);
-//		} else if(op == '.') {	//concatenation运算
-//			op2.connect(op1);
-//			operandStack.push(op2);
-//		}
-//	}
-	
-	//加上连接符，变成后缀式，然后生成DFA
+	//根据后缀式生成NFA, 然后生成DFA
 	private void makeDFA()
 	{
-		re = pre();//这里会改变re，而re影响到isCharacter()。如果要改这里的话，需要把isCharacter()也改了。
-		String redot = new String(this.addDot(re));
-		System.out.println("redot"+redot);
-		String postfix = new String(this.infixToPostfix(redot));
-		System.out.println("postfix:"+postfix);
-		NFA nfa = this.evaluateExpression(postfix);
+		String preRE = pre();
+		NFA nfa = this.evaluateExpression(preRE);
 		this.dfa = new DFA(nfa);
 	}
 	
@@ -242,14 +214,16 @@ public class RE {
 				String t = s.substring(i+1,s.length());
 				s = h + m + t;
 			}
-			
 		}
 		return dfa.match(s);
 	}
 	
 	public static void main(String[] args) {
-		RE r = new RE("\\*");
-		System.out.println(r.isCharacter(0));
-		
+		RE r = new RE("\\(a\\|b\\)\\*\\\\");
+		while(true)
+		{
+			System.out.print("input:");
+			System.out.println(r.match(new Scanner(System.in).nextLine()));
+		}
 	}
 }

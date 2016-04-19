@@ -1,6 +1,7 @@
 package 词法分析;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
@@ -13,7 +14,7 @@ public class Utils {
 	//注意：.*|()\这些需要转义的字符本身不能加入alphetbet。要将他们转义后的值加入！！
 	//因为我们要把他们变成中缀式，所以他们本身不能是“字符”，以免在他们和字符之间加入'.'
 	//例如：“a*”的中缀式就是“a*”。我们不能在a和*之间加入'.'。“a.*”是错误的。
-	//而“a\\*”的中缀式为“a.”。
+	//而“a\\*”的中缀式为“a.”。  ‘’的值为‘\’在RE类中escape字符串中的索引位置.
 	public static String alphetbet = new String(" !\"#$%&'+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{}~?");
 	
 	/**
@@ -61,6 +62,20 @@ public class Utils {
 		}
 		return flag;
 	}
+	
+	
+//	public static boolean addIntoIfNotHaveTheSameElement(ArrayList<NFANode> result, NFANode r)
+//	{
+//		TreeSet<NFANode> ts = new TreeSet<>(result);
+//		if(!ts.contains(r))
+//		{
+//			result.add(r);
+//			System.out.println("in");
+//			return true;
+//		}
+//		System.out.println("out");
+//		return false;
+//	}
 	
 	/**
 	 * 计算一个集合中所有状态的闭包

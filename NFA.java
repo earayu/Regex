@@ -8,7 +8,7 @@ import java.util.ArrayList;
  * @author earayu
  *
  */
-public class NFA {
+public class NFA{
 	
 	private ArrayList<NFANode> nfa;
 	
@@ -17,7 +17,7 @@ public class NFA {
 	 * @author earayu
 	 *
 	 */
-	class NFANode
+	class NFANode implements Comparable
 	{
 		String state;//状态名
 		ArrayList<Character> edge;
@@ -48,6 +48,18 @@ public class NFA {
 					return true;
 			}
 			return false;
+		}
+
+		@Override
+		public int compareTo(Object o) {
+			if(o instanceof NFANode)
+			{
+				NFANode node = (NFANode) o;
+				System.out.println(this.state + " VS " + node.state);
+				return this.state.compareTo(node.state);
+			}
+			throw new ClassCastException("Cannot compare Pair with "  
+	                + o.getClass().getName());
 		}
 	}
 	
@@ -245,7 +257,7 @@ public class NFA {
 	/**
 	 * 模拟NFA，匹配字符串s。这样就能免得转换成DFA。
 	 */
-	public boolean match(String s)
+	public boolean match(String s)//TODO 这个方法错了
 	{
 		if(nfa==null)
 			return false;
@@ -275,4 +287,6 @@ public class NFA {
 		System.out.println(node.hasPath(c));
 		System.out.println(n1.match(String.valueOf(c)));
 	}
+
+
 }
