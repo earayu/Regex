@@ -7,22 +7,19 @@
 ###3. 将表达式转换成DFA
 ###4. 模拟DFA运行
 
-##这是我对正则表达式解析引擎的第一次简陋实现。
-##下一步是实现扩展的正则表达式.
+###下一步是实现扩展的正则表达式.
 
 #测试:
-RE :(d(a|b)*c)|a
-input:dc
-true
-input:dac
-true
-input:dbbbc
-true
-input:a
-true
+RE :(d(a|b)*c)|a   
+input:dc   
+true   
+input:dac   
+true   
+input:dbbbc   
+true   
+input:a   
+true   
 
-RE :\\\.\*\(\)
-input:\.*()
-true
-
-RE :
+RE :\\\.\*\(\)   
+input:\.*()   
+true   
