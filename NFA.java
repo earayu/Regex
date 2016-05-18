@@ -60,7 +60,6 @@ public class NFA{
 			if(o instanceof NFANode)
 			{
 				NFANode node = (NFANode) o;
-				System.out.println(this.state + " VS " + node.state);
 				return this.state.compareTo(node.state);
 			}
 			throw new ClassCastException("Cannot compare Pair with "  

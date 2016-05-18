@@ -1,15 +1,16 @@
 package 词法分析;
 
 import java.util.ArrayList;
-import java.util.Set;
+import java.util.HashSet;
 import java.util.Stack;
-import java.util.TreeSet;
 
 import 词法分析.NFA.NFANode;
 
+
+
 public class DFA {
 
-	private ArrayList<DFANode> dfa;
+	private HashSet<DFANode> dfa;
 	
 	/**
 	 * 与NFA类似
@@ -18,20 +19,25 @@ public class DFA {
 	class DFANode
 	{
 		String name = null;//del?不同于NFA的状态名，DFA的状态名并没有什么卵用
-		ArrayList<NFANode> dstates;
+		HashSet<NFANode> dstates;
 		ArrayList<Character> edge;
 		ArrayList<DFANode> desNode;
 		boolean start;
 		boolean end;
 		
-		DFANode(ArrayList<NFANode> ds)
+		DFANode(HashSet<NFANode> ds)
 		{
-			dstates = new ArrayList<>();
+			dstates = new HashSet<>();
 			edge = new ArrayList<>();
 			desNode = new ArrayList<>();
 			dstates.addAll(ds);
 			start = false;
 			end = false;
+		}
+		
+		@Override
+		public int hashCode() {
+			return dstates.hashCode();
 		}
 		
 		public void addEdge(Character s, DFANode n)
@@ -51,63 +57,11 @@ public class DFA {
 		}
 	}
 	
+	
 	public DFA()
 	{
-		dfa = new ArrayList<>();
+		dfa = new HashSet<>();
 	}
-	
-	//从NFA转DFA。关键代码。实现了子集构造法
-//	public DFA(NFA nfa)
-//	{	//计算开始节点的闭包
-//		NFANode s0 = nfa.getStart();
-//		
-//		ArrayList<ArrayList<NFANode>> node = new ArrayList<>();
-//		node.add(Utils.eClosure(s0));
-//		
-//		ArrayList<ArrayList<NFANode>> result = new ArrayList<>();
-//		Stack<ArrayList<NFANode>> Dstates = new Stack<>();
-//		Dstates.push(Utils.eClosure(s0));
-//		
-//		while(!Dstates.isEmpty())
-//		{
-//			ArrayList<NFANode> currentNode = Dstates.pop();
-//			//为DFA添加一个状态
-//			result.add(currentNode);
-//			
-//			for(Character c:Utils.alphetbet.toCharArray())
-//			{
-//				ArrayList<NFANode> T = Utils.eClosure(Utils.move(currentNode,c));
-//				if(Utils.inResult(result, T)==false)
-//				{
-//					Dstates.push(T);
-//					node.add(T);
-//				}
-//				result.add(T);
-//			}
-//		}
-//		
-//		
-//		DFA dfa = new DFA();
-//		for(ArrayList<NFANode> T:result)
-//			dfa.addNodeToDFA(T);
-//		/**
-//		 * 下面这段代码是最慢的
-//		 */
-//		int count = 1;
-//		for(int i=0;i<result.size();)
-//		{
-//			ArrayList<NFANode> from = result.get(i++);
-//			for(Character c:Utils.alphetbet.toCharArray())
-//			{
-//				ArrayList<NFANode> to = result.get(i++);
-//				dfa.addEdgeToState(from, c, to);
-//				count++;
-//				System.out.println(c);
-//			}
-//		}
-//		System.out.println(count);
-//		this.dfa = dfa.dfa;
-//	}
 	
 	public DFA(NFA nfa)
 	{	
@@ -115,40 +69,36 @@ public class DFA {
 		//计算开始节点的闭包
 		NFANode s0 = nfa.getStart();
 		
-		ArrayList<ArrayList<NFANode>> result = new ArrayList<>();
-		Stack<ArrayList<NFANode>> Dstates = new Stack<>();
-		Dstates.push(Utils.eClosure(s0));
-		result.add(Utils.eClosure(s0));
-		dfa.addNodeToDFA(Utils.eClosure(s0));
+		HashSet<HashSet<NFANode>> result = new HashSet<>();
+		Stack<HashSet<NFANode>> Dstates = new Stack<>();
+		HashSet<NFANode> start = Utils.eClosure(s0);
+		Dstates.push(start);
+		result.add(start);
+		dfa.addNodeToDFA(start);
 		
 		while(!Dstates.isEmpty())
 		{
-			ArrayList<NFANode> currentNode = Dstates.pop();
+			HashSet<NFANode> currentNode = Dstates.pop();
 			//为DFA添加一个状态
-			
-			
-			for(Character c:Utils.alphetbet.toCharArray())
+			for(char c:Utils.alphetbet1.toCharArray())
 			{
-				ArrayList<NFANode> T = Utils.eClosure(Utils.move(currentNode,c));
-				if(!Utils.inResult(result, T))
+				HashSet<NFANode> T = Utils.eClosure(Utils.move(currentNode,c));//2259ms -> 335ms
+				if(!Utils.inResult(result, T))//6ms
 				{
 					Dstates.push(T);
 					dfa.addNodeToDFA(T);
 					result.add(T);
-					//dfa.addEdgeToState(currentNode, c, T);
 				}
 				if(currentNode.size()>0 && T.size()>0)
-					dfa.addEdgeToState(currentNode, c, T);
-				//result.add(T);
+					dfa.addEdgeToState(currentNode, c, T);//1100ms  ->70ms
 			}
-			
 		}
-
 		this.dfa = dfa.dfa;
 	}
-
-	void addNodeToDFA(ArrayList<NFANode> dstates)
+	
+	void addNodeToDFA(HashSet<NFANode> dstates)
 	{
+		
 		if(dfa == null)
 			return;
 		if(getNode(dstates)==null)
@@ -157,15 +107,18 @@ public class DFA {
 			dfa.add(node);
 			for(NFANode n:dstates)
 			{
+				
 				if(n.start)
 					node.start = true;
 				if(n.end)
 					node.end = true;
+				
 			}
 		}
 	}
 	
-	void addEdgeToState(ArrayList<NFANode> from, Character edge, ArrayList<NFANode> to)
+	
+	void addEdgeToState(HashSet<NFANode> from, Character edge, HashSet<NFANode> to)
 	{
 		if(this.dfa == null)
 			return;
@@ -174,28 +127,21 @@ public class DFA {
 		f.addEdge(edge, t);
 	}
 	
-	public DFANode getNode(ArrayList<NFANode> node)//TODO
+	
+	public DFANode getNode(HashSet<NFANode> node)//TODO 这里可以再提高点效率吗？
 	{
 		if(dfa == null)
 			return null;
 		for(DFANode elem:this.dfa)
-		{
 			if(elem.dstates.size()==node.size())
-			{
-				Set<String> s1 = new TreeSet<>();
-				Set<String> s2 = new TreeSet<>();
-				for(NFANode n1:elem.dstates)
-					s1.add(n1.state);
-				for(NFANode n2:node)
-					s2.add(n2.state);
-				if(s1.hashCode()==s2.hashCode())
+				if(elem.dstates.hashCode()==node.hashCode())//NFANode重写了hashCode方法，所以可以用elem.hashCode()==node.hashCode()比较
 				{
 					return elem;
 				}
-			}
-		}
 		return null;
 	}
+	
+
 	
 	public boolean match(String s)
 	{
@@ -218,13 +164,98 @@ public class DFA {
 		else
 			return false;
 	}
-
-	public void stateSort()
+	
+	public static int[] getNext2(String s)
 	{
-		for(int i=0;i<dfa.size();++i)
+		int[] next = new int[s.length()];
+		for(int i=0;i<s.length();++i)
 		{
-			dfa.get(i).name = String.valueOf(i);
+			int max = 0;
+			for(int j=0;j<i;++j)
+			{
+				if(s.substring(0, j+1).equals(s.substring(i-j, i+1)))
+					if(max<j+1)
+						max = j+1;
+			}
+			if(max==0)
+				next[i] = 1;
+			else next[i] =  i - max + 1;
 		}
+		return next;
 	}
 	
+	public boolean contains(String s)
+	{
+		int index = 0;
+		boolean has = false;
+		if(dfa==null)
+			return false;
+		DFANode startNode = null;
+		for(DFANode n:dfa)
+			if(n.start==true)
+				startNode = n;
+		
+		for(Character c:s.toCharArray())
+		{
+			index++;
+			if(startNode.hasPath(c))
+			{
+				startNode = startNode.desNode.get(startNode.edge.indexOf(c));
+				if(startNode.end==true)//非贪婪
+					return true;
+			}
+			else
+			{
+				if(has)
+					return contains(s.substring(Math.max(index, 1)));
+				return contains(s.substring(Math.max(index-1, 1)));
+			}
+		}
+		return false;
+	}
+	
+	public int search(String s)
+	{
+		int[] count = new int[1];
+		count[0] = 0;
+		search(s,count);
+		return count[0];
+	}
+	
+	/*
+	 * O(N)
+	 */
+	public boolean search(String s, int[] count)//获取index,不存在则返回-1
+	{
+		int index = 0;
+		boolean has = false;
+		if(dfa==null)
+			return false;
+		DFANode startNode = null;
+		for(DFANode n:dfa)
+			if(n.start==true)
+				startNode = n;
+		
+		for(Character c:s.toCharArray())
+		{
+			index++;
+			if(startNode.hasPath(c))
+			{
+				startNode = startNode.desNode.get(startNode.edge.indexOf(c));
+				if(startNode.end==true)//非贪婪
+					return true;
+			}
+			else
+			{
+				if(has)
+				{
+					count[0]+=Math.max(index, 1);
+					return search(s.substring(Math.max(index, 1)),count);
+				}
+				count[0]+=Math.max(index-1, 1);
+				return search(s.substring(Math.max(index-1, 1)),count);
+			}
+		}
+		return false;
+	}
 }

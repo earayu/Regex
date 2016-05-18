@@ -1,18 +1,12 @@
 package 词法分析;
 
-import java.util.Scanner;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
 /**
  * 处理正则表达式
- * 1.先处理正则表达式的转义字符。escape中存放转义表,如'.'在escape中的索引为1，则把'.'转换成ASCII码为1的字符。
- * '\0'表示空字符的边，所以为了避免转义成ASCII为0的字符，escape的第一个字符填上0. 实现为：pre()
- * 2.将正则表达式变成中缀式、后缀式。addDot()将正则表达式中省略的连接符号'.'补充完整,即将正则表达式变成中缀形式。
- * infixToPostfix()则将中缀式变成后缀式。
- * 3.利用后缀式生成NFA。evaluateExpression()实现了将后缀式生成NFA的算法（利用双栈）。
- * 4.生成DFA。makeDFA()利用第3步生成的NFA生成DFA。
- * 5.匹配,match()模拟DFA运行。
+ * 实现了.*|() 和转义
+ * 还有\s \w . + ?
  * @author earayu
  *
  */
@@ -20,7 +14,7 @@ public class RE {
 
 	private String re;
 	private DFA dfa;
-	private String escape = "A.*|()\\";//为了让转义的第一个字符索引为1，添上个A（A不转意，所以无所谓。）
+	private String escape = "A.*|()\\+?";//为了让转义的第一个字符索引为1，添上个A（A不转意，所以无所谓。）
 	
 	public RE(String s)
 	{
@@ -33,19 +27,8 @@ public class RE {
 		return re;
 	}
 
-//	private boolean isCharacter(int i) {
-//		char[] alp = Utils.alphetbet.toCharArray();
-//		char c = re.charAt(i);
-//		for(int j=0;j<alp.length;++j)
-//		{
-//			if(alp[j]==c)
-//				return true;
-//		}
-//		return false;
-//	}
-	
 	private boolean isCharacter(char c) {
-		char[] alp = Utils.alphetbet.toCharArray();
+		char[] alp = Utils.alphetbet1.toCharArray();
 		for(int j=0;j<alp.length;++j)
 		{
 			if(alp[j]==c)
@@ -66,6 +49,7 @@ public class RE {
 			if(s.charAt(i-1)=='\\' && 
 					(	s.charAt(i)=='.'|| s.charAt(i)=='|' || s.charAt(i)=='*'
 					||	s.charAt(i)=='(' || s.charAt(i)==')' || s.charAt(i)=='\\'
+					//||  s.charAt(i)=='+' || s.charAt(i)=='?'
 					)	
 			  )
 			{
@@ -187,7 +171,54 @@ public class RE {
 	 */
 	private String pre()
 	{
-		return infixToPostfix(addDot(escapeRE(re)));
+		return infixToPostfix(addDot(/*candy*/(escapeRE(re))));
+	}
+	
+	private String candy(String s)
+	{
+		//.
+		for(int i=0;i<s.length();++i)
+			if(s.charAt(i)=='.')
+				s = s.substring(0,i) + "( |!|\"|#|$|%|&|'|,|-|/|0|1|2|3|4|5|6|7|8|9|:|;|<|=|>|@|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|[|]|^|_|`|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|{|}|~|||||||)"
+				+ s.substring(i+1,s.length());
+		//+
+			else if(s.charAt(i)=='+')//TODO 遇到括号就错了 (a|b)+
+			{
+				if(i==0)
+					try {
+						throw new Exception("正则表达式语法错误: '+' 不能在首位");
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				s = s.substring(0,i) + s.charAt(i-1) + "*" + s.substring(i+1,s.length());
+			}
+		//?
+			else if(s.charAt(i)=='?')//TODO
+			{
+				if(i==0)
+					try {
+						throw new Exception("正则表达式语法错误: '?' 不能在首位");
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				s = s.substring(0,i-1) + "(" + s.charAt(i-1) + "|" + (char)0 + ")" + s.substring(i+1,s.length());
+			}
+			else if(s.charAt(i)=='s')
+			{
+				if(i-1>=0 && s.charAt(i-1)=='\\')
+					s = s.substring(0,i-1) + "( |	|" + (char)10+ "|" + (char)13 +")" + s.substring(i+1,s.length());
+			}
+			else if(s.charAt(i)=='w')
+			{
+				if(i-1>=0 && s.charAt(i-1)=='\\')
+					s = s.substring(0,i-1) + "(0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|_|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)" + s.substring(i+1,s.length());
+			}
+			
+		//[a-zA-z0-9]
+		
+		//{m,n}
+		
+		return s;
 	}
 	
 	//根据后缀式生成NFA, 然后生成DFA
@@ -212,6 +243,7 @@ public class RE {
 		{
 			if(s.charAt(i)=='.'|| s.charAt(i)=='|' || s.charAt(i)=='*'
 					|| s.charAt(i)=='(' || s.charAt(i)==')' || s.charAt(i)=='\\'
+					//|| s.charAt(i)=='+' || s.charAt(i)=='?'
 					)
 			{
 				String h = s.substring(0,i);
@@ -223,12 +255,13 @@ public class RE {
 		return dfa.match(s);
 	}
 	
-	public static void main(String[] args) {
-		RE r = new RE("\\(a\\|b\\)\\*\\\\");
-		while(true)
-		{
-			System.out.print("input:");
-			System.out.println(r.match(new Scanner(System.in).nextLine()));
-		}
+	public boolean contains(String s)
+	{
+		return dfa.contains(s);
+	}
+	
+	public int search(String s)
+	{
+		return dfa.search(s);
 	}
 }
