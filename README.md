@@ -12,13 +12,13 @@ Testing:
 RE :(d(a|b)*c)|a   
 dc   
 true   
----
+
 dac   
 true
----
+
 dbbbc   
 true
----
+
 a   
 true   
 
@@ -29,9 +29,9 @@ true
 RE :(a|b)(c|e)   
 ac   
 true   
----
+
 be   
 true   
----
+
 ae   
 true   
