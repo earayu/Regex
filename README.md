@@ -9,8 +9,29 @@ The next step is to implement extended regular expressions.
 
 Testing:
 
-RE: (d(a|b)*c)|adctruedactruedbbbctrueatrue
+RE :(d(a|b)*c)|a   
+dc   
+true   
+---
+dac   
+true
+---
+dbbbc   
+true
+---
+a   
+true   
 
-RE: \.*().*()true
+RE :\\\.\*\(\)   
+\.*()   
+true   
 
-RE: (a|b)(c|e)actruebetrueaetrue
+RE :(a|b)(c|e)   
+ac   
+true   
+---
+be   
+true   
+---
+ae   
+true   
