@@ -1,33 +1,16 @@
-##实现了正则表达式的连接、或、闭包操作,可以使用括号和转义元符号: . | * ( ) \   
+I have implemented regular expression operations for concatenation, alternation, and closure using parentheses and escape symbols: . | * ( ) . The main method is in TEST.java, and the steps are as follows:
 
-###主方法在TEST.java   
-###步骤:   
-###1. 处理转义符号,然后把正则表达式转换成逆波兰式   
-###2. 将表达式转换成NFA   
-###3. 将表达式转换成DFA   
-###4. 模拟DFA运行   
+1. Handle escape symbols and convert the regular expression into reverse Polish notation.
+2. Convert the expression into an NFA.
+3. Convert the expression into a DFA.
+4. Simulate the DFA operation.
 
-###下一步是实现扩展的正则表达式.   
+The next step is to implement extended regular expressions.
 
-#测试:   
-RE :(d(a|b)*c)|a   
-dc   
-true   
-dac   
-true   
-dbbbc   
-true   
-a   
-true   
+Testing:
 
-RE :\\\.\*\(\)   
-\.*()   
-true   
+RE: (d(a|b)*c)|adctruedactruedbbbctrueatrue
 
-RE :(a|b)(c|e)   
-ac   
-true   
-be   
-true   
-ae   
-true   
+RE: \.*().*()true
+
+RE: (a|b)(c|e)actruebetrueaetrue
